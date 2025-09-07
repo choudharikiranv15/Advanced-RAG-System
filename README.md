@@ -1,5 +1,8 @@
 # RAG System: Ask Questions About Your PDFs!
 
+# Sample Working Video
+https://drive.google.com/file/d/1u1by62j8OaY3srCORFj7m0XsGutu3-0Y/view?usp=sharing
+
 ## Tech Stack
 
 - **Programming Language:** Python 3.11
