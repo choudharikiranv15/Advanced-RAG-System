@@ -75,7 +75,7 @@ https://drive.google.com/file/d/1u1by62j8OaY3srCORFj7m0XsGutu3-0Y/view?usp=shari
 4. **Install Dependencies**
    - `pip install -r requirements.txt`
 5. **Set Up API Keys**
-   - Create a `.env` file in the `config` folder.
+   - Create a `.env` file.
    - Add your [Groq API key](https://console.groq.com/keys):
      ```
      GROQ_API_KEY=your_groq_api_key_here
