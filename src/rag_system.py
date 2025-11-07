@@ -3,8 +3,8 @@ import os
 import logging
 from typing import List, Dict, Any
 from .pdf_processor import PDFProcessor
-# src/rag_system.py - Change this import line
-from .vector_store_windows_safe import VectorStore
+# src/rag_system.py - Use simple vector store to avoid ChromaDB + Streamlit issues
+from .simple_vector_store import SimpleVectorStore as VectorStore
 from .retriever import SmartRetriever
 from .llm_handler import LLMHandler
 

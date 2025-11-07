@@ -26,29 +26,61 @@ class PDFProcessor:
     def extract_content(self, pdf_path: str) -> List[DocumentChunk]:
         """Extract all content types from PDF"""
         chunks = []
+        doc = None
         
-        # Process with PyMuPDF for images and basic text
-        doc = fitz.open(pdf_path)
-        
-        # Process with pdfplumber for tables and structured text
-        with pdfplumber.open(pdf_path) as pdf:
-            for page_num in range(len(doc)):
-                page_fitz = doc[page_num]
-                page_plumber = pdf.pages[page_num]
+        try:
+            # Process with PyMuPDF for images and basic text
+            self.logger.info(f"Opening PDF: {pdf_path}")
+            doc = fitz.open(pdf_path)
+            
+            # Process with pdfplumber for tables and structured text
+            with pdfplumber.open(pdf_path) as pdf:
+                total_pages = len(doc)
+                self.logger.info(f"Processing {total_pages} pages")
                 
-                # Extract text chunks
-                text_chunks = self._extract_text_chunks(page_plumber, page_num)
-                chunks.extend(text_chunks)
+                for page_num in range(total_pages):
+                    try:
+                        self.logger.info(f"Processing page {page_num + 1}/{total_pages}")
+                        page_fitz = doc[page_num]
+                        page_plumber = pdf.pages[page_num]
+                        
+                        # Extract text chunks
+                        try:
+                            text_chunks = self._extract_text_chunks(page_plumber, page_num)
+                            chunks.extend(text_chunks)
+                            self.logger.info(f"Extracted {len(text_chunks)} text chunks from page {page_num + 1}")
+                        except Exception as e:
+                            self.logger.error(f"Error extracting text from page {page_num + 1}: {e}")
+                        
+                        # Extract table chunks
+                        try:
+                            table_chunks = self._extract_table_chunks(page_plumber, page_num)
+                            chunks.extend(table_chunks)
+                            self.logger.info(f"Extracted {len(table_chunks)} table chunks from page {page_num + 1}")
+                        except Exception as e:
+                            self.logger.error(f"Error extracting tables from page {page_num + 1}: {e}")
+                        
+                        # Extract image chunks
+                        try:
+                            image_chunks = self._extract_image_chunks(page_fitz, page_num)
+                            chunks.extend(image_chunks)
+                            self.logger.info(f"Extracted {len(image_chunks)} image chunks from page {page_num + 1}")
+                        except Exception as e:
+                            self.logger.error(f"Error extracting images from page {page_num + 1}: {e}")
+                            
+                    except Exception as e:
+                        self.logger.error(f"Error processing page {page_num + 1}: {e}")
+                        continue
+            
+            self.logger.info(f"Total chunks extracted: {len(chunks)}")
+            
+        except Exception as e:
+            self.logger.error(f"Critical error processing PDF {pdf_path}: {e}")
+            raise
+        finally:
+            if doc:
+                doc.close()
                 
-                # Extract table chunks
-                table_chunks = self._extract_table_chunks(page_plumber, page_num)
-                chunks.extend(table_chunks)
-                
-                # Extract image chunks
-                image_chunks = self._extract_image_chunks(page_fitz, page_num)
-                chunks.extend(image_chunks)
-        
-        doc.close()
         return chunks
     
     def _extract_text_chunks(self, page, page_num: int) -> List[DocumentChunk]:

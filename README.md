@@ -6,8 +6,8 @@ https://drive.google.com/file/d/1u1by62j8OaY3srCORFj7m0XsGutu3-0Y/view?usp=shari
 ## Tech Stack
 
 - **Programming Language:** Python 3.11
-- **Web Framework:** [Streamlit](https://streamlit.io/) (for the user interface)
-- **Vector Database:** [ChromaDB](https://www.trychroma.com/) (stores and searches document chunks)
+- **Web Framework:** Flask (for the user interface with markdown rendering)
+- **Vector Database:** Simple in-memory vector store (fast and reliable, no external dependencies)
 - **Large Language Model (LLM):** [Groq Llama-3.1-8B-Instant](https://groq.com/) (cloud API, configurable)
 - **Embedding Model:** [all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2) (local), with fallback to TF-IDF (scikit-learn)
 - **PDF Processing:**
@@ -48,6 +48,49 @@ https://drive.google.com/file/d/1u1by62j8OaY3srCORFj7m0XsGutu3-0Y/view?usp=shari
 2. **Processing**: The system reads the text, tables, and images from your PDFs.
 3. **Ask a Question**: You type a question (e.g., "What are the main topics in this document?").
 4. **AI Search & Answer**: The system finds the most relevant information and uses AI to generate a clear answer.
+
+## API Key Setup (Important!)
+
+**This application requires a Groq API key to function properly.**
+
+1. **Get a Groq API Key**:
+   - Sign up at [Groq Console](https://console.groq.com/)
+   - Navigate to the API Keys section
+   - Create a new API key
+
+2. **Add Your API Key**:
+   - Open the `.env` file in the project root directory
+   - Replace the empty `GROQ_API_KEY=` line with your key: `GROQ_API_KEY=your_key_here`
+   - Save the file
+
+3. **Restart the Application**:
+   - If the application is running, stop it and restart
+   - The warning message should disappear, and you can now use all features
+
+## Docker Setup
+
+### Building and Running with Docker
+
+1. **Build the Docker image**:
+   ```bash
+   docker build -t rag_system:latest .
+   ```
+
+2. **Set up your API key**:
+   - Create a `.env` file with your Groq API key before running the container
+   - Or use environment variables when running the container
+
+3. **Run the container**:
+   ```bash
+   # Option 1: Using a .env file (recommended)
+   docker run -p 8000:8000 --env-file .env rag_system:latest
+   
+   # Option 2: Passing the API key directly
+   docker run -p 8000:8000 -e GROQ_API_KEY=your_groq_api_key_here rag_system:latest
+   ```
+
+4. **Access the application**:
+   - Open your browser and navigate to `http://localhost:8000`
 5. **See Results**: The answer appears instantly, with details about where the information came from.
 
 ---
@@ -81,8 +124,8 @@ https://drive.google.com/file/d/1u1by62j8OaY3srCORFj7m0XsGutu3-0Y/view?usp=shari
      GROQ_API_KEY=your_groq_api_key_here
      ```
 6. **Run the App**
-   - `streamlit run demo.py`
-   - The app will open in your browser.
+   - `python app_flask.py`
+   - Open your browser at http://localhost:8080
 
 ---
 
@@ -100,16 +143,16 @@ https://drive.google.com/file/d/1u1by62j8OaY3srCORFj7m0XsGutu3-0Y/view?usp=shari
 
 ## Project Structure
 
-- `demo.py` — Main web app (Streamlit interface)
+- `app_flask.py` — Main web app (Flask interface with markdown rendering)
+- `templates/index.html` — Modern, responsive UI with ChatGPT-style formatting
 - `src/` — Core logic:
   - `rag_system.py` — Orchestrates the whole process
   - `pdf_processor.py` — Extracts text, tables, and images from PDFs
-  - `llm_handler.py` — Handles AI question answering
+  - `llm_handler.py` — Handles AI question answering with structured responses
   - `retriever.py` — Finds the most relevant document parts
-  - `vector_store_windows_safe.py` — Stores and searches document data (Windows-safe)
+  - `simple_vector_store.py` — Fast in-memory vector store
 - `config/` — Configuration files
 - `data/pdfs/` — Where your uploaded PDFs are stored
-- `models/` — Local AI models (if used)
 - `requirements.txt` — List of required Python packages
 
 ---

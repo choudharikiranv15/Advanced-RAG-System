@@ -6,9 +6,15 @@ import logging
 class LLMHandler:
     def __init__(self, config):
         self.config = config
-        self.client = Groq(api_key=config.GROQ_API_KEY)
         self.logger = logging.getLogger(__name__)
         self.conversation_history = []
+        
+        # Check if API key is available
+        if not config.GROQ_API_KEY:
+            self.logger.error("GROQ_API_KEY is not set. Please add your API key to the .env file.")
+            self.client = None
+        else:
+            self.client = Groq(api_key=config.GROQ_API_KEY)
         
     def generate_response(self, query: str, context_docs: List[Dict[str, Any]], 
                          conversation_history: List[str] = None) -> Dict[str, Any]:
@@ -24,6 +30,18 @@ class LLMHandler:
         prompt = self._create_prompt(query, context_text, conversation_context)
         
         try:
+            # Check if client is initialized
+            if self.client is None:
+                error_message = "ERROR: Groq API key is not set or is invalid. Please add a valid API key to the .env file."
+                self.logger.error(error_message)
+                return {
+                    'answer': error_message,
+                    'sources_used': len(context_docs),
+                    'context_types': list(set([doc['metadata']['chunk_type'] for doc in context_docs])),
+                    'confidence': 0.0,
+                    'error': True
+                }
+                
             # Generate response
             response = self.client.chat.completions.create(
                 model=self.config.LLM_MODEL,
@@ -47,7 +65,8 @@ class LLMHandler:
                 'answer': answer,
                 'sources_used': len(context_docs),
                 'context_types': list(set([doc['metadata']['chunk_type'] for doc in context_docs])),
-                'confidence': self._calculate_confidence(context_docs)
+                'confidence': self._calculate_confidence(context_docs),
+                'error': False
             }
             
         except Exception as e:
@@ -92,10 +111,17 @@ class LLMHandler:
         
         USER QUESTION: {query}
         
-        Please provide a comprehensive and accurate answer based on the context provided. 
-        If the context includes tables, present the data clearly. 
-        If the context includes image content (OCR), mention that information was extracted from images.
-        If you cannot find relevant information in the context, please say so clearly.
+        INSTRUCTIONS:
+        Provide a well-structured, ChatGPT-style response with:
+        1. A brief introductory paragraph
+        2. Clear section headers (## for main sections, ### for subsections)
+        3. Bullet points for lists
+        4. **Bold** for emphasis on key terms
+        5. Proper spacing between sections
+        6. Natural, conversational language
+        7. Page citations where relevant
+        
+        Format your response in clean markdown. Make it easy to read and scan.
         """
         
         return prompt
@@ -103,17 +129,56 @@ class LLMHandler:
     def _get_system_prompt(self) -> str:
         """Get system prompt for the LLM"""
         return """
-        You are an intelligent document assistant that helps users find information from PDF documents. 
+        You are an intelligent document assistant similar to ChatGPT. You help users find information from PDF documents.
         You have access to content extracted from PDFs including text, tables, and images (via OCR).
         
-        Guidelines:
-        1. Always base your answers on the provided context
-        2. If information is from a table, format it clearly
-        3. If information is from an image (OCR), mention this
-        4. Be precise and cite the page numbers when relevant
-        5. If you don't have enough context, say so clearly
-        6. Maintain a helpful and conversational tone
-        7. For complex queries, break down your answer into clear sections
+        IMPORTANT - Response Formatting Rules:
+        1. Structure your response like ChatGPT with clear sections:
+           - Start with a brief introduction paragraph
+           - Use ## for main section headers
+           - Use ### for subsections
+           - Use clear paragraphs between sections
+           
+        2. Formatting guidelines:
+           - Use **bold** for key terms and emphasis
+           - Use bullet points with • for lists
+           - Use numbered lists (1., 2., 3.) for sequential steps
+           - Leave blank lines between sections for readability
+           - Use > for important notes or quotes
+           
+        3. Content presentation:
+           - Write in a natural, conversational tone
+           - Break complex information into digestible sections
+           - If presenting data from tables, format as markdown tables
+           - For images, note with 📷 "Information from image"
+           - Cite page numbers naturally: "(Page 3)" or "as mentioned on page 5"
+           
+        4. Quality standards:
+           - Be concise but comprehensive
+           - Avoid repetition
+           - Don't use excessive symbols or asterisks
+           - Make responses scannable with good structure
+           - End with a brief summary if the answer is long
+        
+        Example response structure:
+        
+        Based on the documents, here's what I found about [topic]:
+        
+        ## Main Finding
+        
+        [Clear paragraph explaining the main point]
+        
+        ## Key Details
+        
+        • **Point 1**: Description
+        • **Point 2**: Description
+        • **Point 3**: Description
+        
+        ## Additional Information
+        
+        [Supporting details in paragraph form]
+        
+        > Note: This information is from page X of the document.
         """
     
     def _calculate_confidence(self, context_docs: List[Dict[str, Any]]) -> float:

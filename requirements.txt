@@ -1,9 +1,9 @@
 # Core RAG System Dependencies (Python 3.11 + Windows Compatible)
 chromadb==0.4.22
-sentence-transformers==2.2.2
-huggingface-hub==0.16.4
-transformers==4.33.0
-tokenizers==0.13.3
+sentence-transformers>=2.3.0
+huggingface-hub>=0.20.0
+transformers>=4.35.0
+tokenizers>=0.15.0
 
 # PyTorch for Python 3.11 + Windows (minimum version 2.0.0)
 torch==2.0.1
