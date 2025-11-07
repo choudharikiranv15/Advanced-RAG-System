@@ -83,15 +83,14 @@ https://drive.google.com/file/d/1u1by62j8OaY3srCORFj7m0XsGutu3-0Y/view?usp=shari
 3. **Run the container**:
    ```bash
    # Option 1: Using a .env file (recommended)
-   docker run -p 8000:8000 --env-file .env rag_system:latest
+   docker run -p 8080:8080 --env-file .env rag_system:latest
    
    # Option 2: Passing the API key directly
-   docker run -p 8000:8000 -e GROQ_API_KEY=your_groq_api_key_here rag_system:latest
+   docker run -p 8080:8080 -e GROQ_API_KEY=your_groq_api_key_here rag_system:latest
    ```
 
 4. **Access the application**:
-   - Open your browser and navigate to `http://localhost:8000`
-5. **See Results**: The answer appears instantly, with details about where the information came from.
+   - Open your browser and navigate to `http://localhost:8080`
 
 ---
 
