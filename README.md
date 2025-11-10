@@ -470,7 +470,7 @@ This project leverages amazing open-source technologies:
 
 **[⬆ Back to Top](#-advanced-rag-system)**
 
-Made with ❤️ by [Kiran V Choudhari](https://github.com/choudharikiranv15)
+Made with ❤️ by [Kiran V Choudhari](https://www.linkedin.com/in/kiranchoudhari-1510m)
 
 ⭐ Star this repo if you find it helpful!
 
